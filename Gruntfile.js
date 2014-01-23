@@ -28,13 +28,18 @@ module.exports = function(grunt) {
       tests: ['tmp'],
     },
 
-    watch: {
-      scripts: {
+    // internal name for watch 
+    delta: {
+      test: {
         files: ['tasks/**/*.js', 'test/**/*.js'],
-        tasks: ['shell:debugtest'],
+        tasks: ['default'],
+      },
+      debug: {
         options: {
           spawn: false,
         },
+        files: ['tasks/**/*.js', 'test/**/*.js'],
+        tasks: ['shell:debug'],
       },
     },
 
@@ -64,7 +69,7 @@ module.exports = function(grunt) {
     },
 
     shell: {
-      debugtest: {
+      debug: {
         options: {
           stdout: true
         },
@@ -72,12 +77,13 @@ module.exports = function(grunt) {
       }
     },
  
+    // run node-inspector and unit tests concurrently
     'node-inspector':{
       default: {}
     },
 
     concurrent: {
-      test: ['node-inspector', 'shell:debugtest', 'watch'],
+      test: ['node-inspector', 'shell:debug', 'delta:debug'],
       options: {
         logConcurrentOutput: true
       }
@@ -103,6 +109,10 @@ module.exports = function(grunt) {
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
+
+  // continuous testing
+  grunt.renameTask( 'watch', 'delta' );
+  grunt.registerTask( 'watch', ['default', 'delta:test' ] );
 
   // debugging.
   grunt.registerTask('debug', ['concurrent:test']);
